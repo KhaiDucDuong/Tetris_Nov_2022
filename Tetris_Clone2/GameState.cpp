@@ -19,7 +19,7 @@ void GameState::PlaceBlock()
 
 bool GameState::IsGameOver()
 {
-    return !(_grid->isRowEmpty(0) && _grid->isRowEmpty(1));
+    return !(_grid->isRowEmpty(0)/* && _grid->isRowEmpty(1)*/);
 }
 
 bool GameState::blockFit()
@@ -72,7 +72,10 @@ void GameState::MoveDown()
 {
     _curBlock.Move(1, 0);
     if (!blockFit())
+    {
         _curBlock.Move(-1, 0);
+        PlaceBlock();
+    }
 }
 
 bool GameState::getGameOver()
@@ -98,4 +101,14 @@ Position GameState::getCurBlockPosition(int tile)
 std::string GameState::getCurBlockFilePath()
 {
     return _blockQueue->getBlockPath(_curBlock.GetId());
+}
+
+void GameState::GetAndUpdateCurBlock()
+{
+    _curBlock = _blockQueue->GetandUpdate();
+}
+
+int GameState::GetGridValue(const int& r, const int& c)
+{
+    return _grid->getValueAt1Position(r, c);
 }

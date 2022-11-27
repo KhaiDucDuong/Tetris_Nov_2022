@@ -40,7 +40,7 @@ Position Block::GetPosition(const int tile)
 
 void Block::RotateCW()
 {
-	_RotationState = (_RotationState + 1) / nRotations;
+	_RotationState = (_RotationState + 1) % nRotations;
 }
 
 void Block::RotateCCW()

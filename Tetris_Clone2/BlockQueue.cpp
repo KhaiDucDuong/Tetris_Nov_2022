@@ -38,11 +38,11 @@ BlockQueue::BlockQueue()
 Block BlockQueue::GetandUpdate()
 {
     Block cur_block = _nextBlock;
-    do
+    /*do
     {
         _nextBlock = RandomBlock();
-    } while (_nextBlock.GetId() == cur_block.GetId());
-
+    } while (_nextBlock.GetId() == cur_block.GetId());*/
+    _nextBlock = RandomBlock();
     return cur_block;
 }
 
@@ -50,38 +50,38 @@ std::string BlockQueue::getBlockPath(const int id)
 {
     switch (id)
     {
-    case 1:
-    {
-        return IBlock_file_path;
-    }
-    case 2:
-    {
-        return JBlock_file_path;
-    }
-    case 3:
-    {
-        return LBlock_file_path;
-    }
-    case 4:
-    {
-        return OBlock_file_path;
-    }
-    case 5:
-    {
-        return SBlock_file_path;
-    }
-    case 6:
-    {
-        return TBlock_file_path;
-    }
-    case 7:
-    {
-        return ZBlock_file_path;
-    }
-    default:
-    {
-        return "";
-    }
+        case 1:
+        {
+            return IBlock_file_path;
+        }
+        case 2:
+        {
+            return JBlock_file_path;
+        }
+        case 3:
+        {
+            return LBlock_file_path;
+        }
+        case 4:
+        {
+            return OBlock_file_path;
+        }
+        case 5:
+        {
+            return SBlock_file_path;
+        }
+        case 6:
+        {
+            return TBlock_file_path;
+        }
+        case 7:
+        {
+            return ZBlock_file_path;
+        }
+        default:
+        {
+            return "";
+        }
 
     }
     

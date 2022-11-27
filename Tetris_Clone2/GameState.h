@@ -45,5 +45,11 @@ public:
 
 	//get _curBlock FilePath
 	std::string getCurBlockFilePath();
+
+	//set _curBlock to _nextBlock and update new _nextBlock
+	void GetAndUpdateCurBlock();
+
+	//get the value of a position in _grid
+	int GetGridValue(const int& r, const int& c);
 };
 

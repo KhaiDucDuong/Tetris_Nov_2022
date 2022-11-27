@@ -1,14 +1,14 @@
 #pragma once
 #include "GameState.h"
-//#include "BlockQueue.h"
-//#include "GameGrid.h"
 #include "Image.h"
 
 class Game
 {
 public:
-	Game();
+	Game(const int level);
 	enum {ScreenW = 580, ScreenH = 760};
+	enum {BlockW = 36, BlockH = 36};
+	enum {GridStartPosX = 20, GridStartPosY = 20};
 	//init SDL and and other classes
 	void init();
 	//loop game_logic and game_rendering until gameOver is true
@@ -29,11 +29,8 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* render;
 	
-
-	//GameState _gameState;
-	/*Block _curBlock;
-	BlockQueue _blockQueue;
-	GameGrid _grid;*/
+	
+	GameState _gameState;
 
 	std::string bg_path = "res/Background.jpg";
 	std::string UI_path = "res/UI.png";
@@ -50,41 +47,10 @@ private:
 	//draw the blocks placed on grid
 	void drawGridBlock();
 
+	const int fps = 60;
+	int timePassed;
+	int level;
+	int timeTillDrop;
 
-
-
-	////rotate _curBlock CW
-	//void RotateCW();
-	////rotate _curBlock CCW
-	//void RotateCCW();
-	////move _curBlock left
-	//void MoveLeft();
-	////move _curBlock right
-	//void MoveRight();
-	////move _curBlock down
-	//void MoveDown();
-
-	////place _curBlock to _grid and call ClearFullRows and check IsGameOver, if game is not over, update _curBlock
-	//void PlaceBlock();
-	////check if game is over; if yes, set _gameOver to true
-	//bool IsGameOver();
-	////check if _curBlock is in a legal position
-	//bool blockFit();
-
-
-
-
-
-	////get _curBlock id
-	//int getCurBlockID();
-
-	////get filePath based on Block's ID
-	//std::string getBlockFilePath(const int id);
-
-	////get _curBlock position
-	//Position getCurBlockPosition(int tile);
-
-	////get _curBlock FilePath
-	//std::string getCurBlockFilePath();
 };
 

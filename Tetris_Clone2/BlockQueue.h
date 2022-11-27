@@ -37,12 +37,12 @@ private:
 	Block _blocks[nBlocks]
 	{
 		IBlock(1, IBlock_start, IBlock_file_path),
-		JBlock(1, JBlock_start, JBlock_file_path),
-		LBlock(1, LBlock_start, LBlock_file_path),
-		OBlock(1, OBlock_start, OBlock_file_path),
-		SBlock(1, SBlock_start, SBlock_file_path),
-		TBlock(1, TBlock_start, TBlock_file_path),
-		ZBlock(1, ZBlock_start, ZBlock_file_path)
+		JBlock(2, JBlock_start, JBlock_file_path),
+		LBlock(3, LBlock_start, LBlock_file_path),
+		OBlock(4, OBlock_start, OBlock_file_path),
+		SBlock(5, SBlock_start, SBlock_file_path),
+		TBlock(6, TBlock_start, TBlock_file_path),
+		ZBlock(7, ZBlock_start, ZBlock_file_path)
 	};
 
 	Random random{ 0, nBlocks - 1 };
