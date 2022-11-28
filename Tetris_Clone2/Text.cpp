@@ -63,3 +63,18 @@ void Text::createAndDrawText(SDL_Renderer* render, const std::string fontPath, i
 	TTF_CloseFont(font);
 	SDL_DestroyTexture(tex);
 }
+
+void Text::createAndDrawText(SDL_Renderer* render, const std::string fontPath, int fontSize, const std::string text, const int& w, const int& h, const int& pos_x, const int& pos_y, SDL_Color& color)
+{
+	TTF_Font* font = NULL;
+	SDL_Texture* tex = NULL;
+
+	if (LoadFont(font, fontPath, fontSize))
+	{
+		createTextTexture(render, tex, font, text, color);
+		drawText(render, tex, w, h, pos_x, pos_y);
+	}
+
+	TTF_CloseFont(font);
+	SDL_DestroyTexture(tex);
+}

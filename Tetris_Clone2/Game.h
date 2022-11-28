@@ -42,6 +42,8 @@ private:
 	std::string UI_path = "res/UI.png";
 	std::string grid_path = "res/Grid.png";
 	std::string font_path = "res/font.ttf";
+	std::string rightArrow_path = "res/right arrow.png";
+	std::string leftArrow_path = "res/left arrow.png";
 
 	const int fontSize = 24;
 

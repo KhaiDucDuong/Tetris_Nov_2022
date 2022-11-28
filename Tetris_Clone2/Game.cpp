@@ -104,6 +104,10 @@ void Game::game_rendering()
 
 	drawNextBlock();
 	drawScore();
+	drawLevelDifficulty();
+
+	if (gameOver)
+		drawGameOver();
 	Image::updateScreen(render);
 }
 
@@ -218,6 +222,7 @@ void Game::drawGridBlock()
 
 void Game::drawNextBlock()
 {
+	Text::createAndDrawText(render, font_path, fontSize, "Next block:", 100, 75, ScoreStartPosX - 12, 205 - 12);
 	int pos_x = 0;
 	int pos_y = 0;
 	for (int i = 0; i < Block::nTiles; i++)
@@ -227,6 +232,13 @@ void Game::drawNextBlock()
 		if (pos_x >= GridStartPosX && pos_y >= GridStartPosY)
 			Image::CreateAndDrawTexture(render, _gameState.getNextBlockFilePath(), UIBlockW, UIBlockH, pos_x, pos_y);
 	}
+}
+
+void Game::drawGameOver()
+{
+	SDL_Color color = { 204, 0, 153, 255 };
+	Text::createAndDrawText(render, font_path, fontSize, "GAME OVER :(", 300, 200, 140, 205, color);
+	Text::createAndDrawText(render, font_path, fontSize, "Press ENTER to play again", 400, 125, 90, 440, color);
 }
 
 
@@ -244,4 +256,12 @@ void Game::drawScore()
 {
 	Text::createAndDrawText(render, font_path, fontSize, "Score:", 75, 50, ScoreStartPosX, ScoreStartPosY);
 	Text::createAndDrawText(render, font_path, fontSize, std::to_string(point) , 105, 55, PointStartPosX, PointStartPosY);
+}
+
+void Game::drawLevelDifficulty()
+{
+	Text::createAndDrawText(render, font_path, fontSize, "Level difficulty:", 100, 50, 430, 360);
+	Text::createAndDrawText(render, font_path, fontSize, std::to_string(level), 105, 55, 430, 420);
+	Image::CreateAndDrawTexture(render, leftArrow_path, 35, 35, 435, 480);
+	Image::CreateAndDrawTexture(render, rightArrow_path, 35, 35, 490, 480);
 }

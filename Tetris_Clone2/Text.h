@@ -14,5 +14,6 @@ private:
 
 public:
 	static void createAndDrawText(SDL_Renderer* render, const std::string fontPath, int fontSize, const std::string text, const int& w, const int& h, const int& pos_x, const int& pos_y);
+	static void createAndDrawText(SDL_Renderer* render, const std::string fontPath, int fontSize, const std::string text, const int& w, const int& h, const int& pos_x, const int& pos_y, SDL_Color &color);
 };
 
