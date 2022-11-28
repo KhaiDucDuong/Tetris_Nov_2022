@@ -171,6 +171,11 @@ void Game::game_events()
 			{
 				game_restart();
 			}
+			else if (event.type == SDL_QUIT)
+			{
+				gameOver = true;
+				exitGame = true;
+			}
 		}
 	
 }
