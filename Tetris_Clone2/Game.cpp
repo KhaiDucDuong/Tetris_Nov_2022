@@ -85,9 +85,10 @@ void Game::game_logic()
 
 void Game::game_restart()
 {
-	timePassed = 0;
 	point = 0;
 	gameOver = false;
+	level = 5;
+	resetSpeed();
 	_gameState.newGame();
 }
 
@@ -167,6 +168,36 @@ void Game::game_events()
 						break;
 					}
 				}
+				case SDL_MOUSEBUTTONDOWN:
+				{
+					if (event.button.button == SDL_BUTTON_LEFT)
+					{
+						//check if user clicked on difficulty arrows
+						//left arrow
+						/*int mouse_pos_x;
+						int mouse_pos_y;
+						SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);*/
+						if (event.button.x >= 435 && event.button.x <= 470 && event.button.y >= 480 && event.button.y <= 515)
+						{
+							if (level > 1)
+							{
+								level--;
+								resetSpeed();
+							}
+						}
+						//right arrow
+						if (event.button.x >= 490 && event.button.x <= 525 && event.button.y >= 480 && event.button.y <= 515)
+						{
+							if (level < 15)
+							{
+								level++;
+								resetSpeed();
+							}
+						}
+						//Image::CreateAndDrawTexture(render, leftArrow_path, 35, 35, 435, 480);
+						//Image::CreateAndDrawTexture(render, rightArrow_path, 35, 35, 490, 480);
+					}
+				}
 				default:
 					break;
 				}
@@ -182,6 +213,12 @@ void Game::game_events()
 			}
 		}
 	
+}
+
+void Game::resetSpeed()
+{
+	timeTillDrop = 3000 / fps / (level * 2);
+	timePassed = 0;
 }
 
 void Game::drawUI()

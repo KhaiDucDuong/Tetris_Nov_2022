@@ -26,6 +26,8 @@ private:
 	bool gameOver;
 	bool exitGame;
 	int point;
+	//reset the timeTillBlockDropped and set timePassed to 0
+	void resetSpeed();
 	//handling game logic
 	void game_logic();
 	//rendering the current game
