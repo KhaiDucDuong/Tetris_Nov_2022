@@ -58,5 +58,9 @@ public:
 	Block GetandUpdate();
 	//get BlockIDPath
 	std::string getBlockPath(const int id);
+
+	Position getNextBlockPosition(int tile);
+
+	int getNextBlockID();
 };
 

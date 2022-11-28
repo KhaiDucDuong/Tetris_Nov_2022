@@ -86,3 +86,13 @@ std::string BlockQueue::getBlockPath(const int id)
     }
     
 }
+
+Position BlockQueue::getNextBlockPosition(int tile)
+{
+    return _nextBlock.GetPosition(tile);
+}
+
+int BlockQueue::getNextBlockID()
+{
+    return _nextBlock.GetId();
+}

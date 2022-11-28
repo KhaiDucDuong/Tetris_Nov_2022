@@ -4,9 +4,12 @@ Game::Game(const int level)
 {
 	window = NULL;
 	render = NULL;
+
 	gameOver = true;
+	exitGame = true;
+	point = 0;
 	this->level = level;
-	timeTillDrop = 3000 / fps / level;
+	timeTillDrop = 3000 / fps / (level * 2);
 	timePassed = 0;
 }
 
@@ -35,14 +38,18 @@ void Game::init()
 				return;
 			}
 		}
+
+		if (TTF_Init() == -1)
+			std::cout << "SDL_ttf failed to init!!!\n";
 	}
 
 	gameOver = false;
+	exitGame = false;
 }
 
 void Game::game_loop()
 {
-	while (!gameOver)
+	while (!exitGame)
 	{
 		game_logic();
 		game_rendering();
@@ -51,20 +58,37 @@ void Game::game_loop()
 
 void Game::game_quit()
 {
+	TTF_Quit();
+	SDL_DestroyRenderer(render);
+	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
 
 void Game::game_logic()
 {
 	game_events();
-
-	if (timePassed == timeTillDrop)
+	if (!gameOver)
 	{
-		timePassed = 0;
-		_gameState.MoveDown();
+
+		if (timePassed == timeTillDrop)
+		{
+			timePassed = 0;
+			_gameState.MoveDown(point);
+		}
+		else
+			timePassed++;
+
 	}
-	else
-		timePassed++;
+
+	gameOver = _gameState.getGameOver();
+}
+
+void Game::game_restart()
+{
+	timePassed = 0;
+	point = 0;
+	gameOver = false;
+	_gameState.newGame();
 }
 
 void Game::game_rendering()
@@ -78,65 +102,77 @@ void Game::game_rendering()
 	drawCurBlock();
 	drawGridBlock();
 
+	drawNextBlock();
+	drawScore();
 	Image::updateScreen(render);
 }
 
 void Game::game_events()
 {
 	SDL_Event event;
-	if (SDL_PollEvent(&event))
-	{
-		switch (event.type)
+
+		if (SDL_PollEvent(&event))
 		{
-		case SDL_QUIT:
-		{
-			gameOver = true;
-			break;
+			if (!gameOver)
+			{
+				switch (event.type)
+				{
+				case SDL_QUIT:
+				{
+					gameOver = true;
+					exitGame = true;
+					break;
+				}
+				case SDL_KEYDOWN:
+				{
+					switch (event.key.keysym.sym)
+					{
+					case SDLK_UP:
+					{
+						_gameState.RotateCW();
+						break;
+					}
+					case SDLK_z:
+					{
+						_gameState.RotateCCW();
+						break;
+					}
+					case SDLK_DOWN:
+					{
+						_gameState.MoveDown(point);
+						//avoid double drop
+						timePassed = 0;
+						break;
+					}
+					case SDLK_LEFT:
+					{
+						_gameState.MoveLeft();
+						break;
+					}
+					case SDLK_RIGHT:
+					{
+						_gameState.MoveRight();
+						break;
+					}
+					case SDLK_SPACE:
+					{
+						_gameState.hardDrop(point);
+						break;
+					}
+					default:
+						break;
+					}
+				}
+				default:
+					break;
+				}
+			}
+			else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN)
+			{
+				game_restart();
+			}
 		}
-		case SDL_KEYDOWN:
-		{
-			switch (event.key.keysym.sym)
-			{
-			case SDLK_UP:
-			{
-				_gameState.RotateCW();
-				break;
-			}
-			case SDLK_z:
-			{
-				_gameState.RotateCCW();
-				break;
-			}
-			case SDLK_DOWN:
-			{
-				_gameState.MoveDown();
-				//avoid double drop
-				timePassed = 0;
-				break;
-			}
-			case SDLK_LEFT:
-			{
-				_gameState.MoveLeft();
-				break;
-			}
-			case SDLK_RIGHT:
-			{
-				_gameState.MoveRight();
-				break;
-			}
-			case SDLK_RETURN:
-			{
-				_gameState.GetAndUpdateCurBlock();
-				break;
-			}
-			default:
-				break;
-			}
-		}
-		default:
-			break;
-		}
-	}
+	
 }
 
 void Game::drawUI()
@@ -150,9 +186,8 @@ void Game::drawCurBlock()
 	int pos_y = 0;
 	for (int i = 0; i < Block::nTiles; i++)
 	{
-		//we minus pos_y to 2 * BlockH because the top 2 rows won't be displayed
 		pos_x = GridStartPosX + _gameState.getCurBlockPosition(i).Column * BlockW;
-		pos_y = GridStartPosY + _gameState.getCurBlockPosition(i).Row * BlockH;// -2 * BlockH;
+		pos_y = GridStartPosY + _gameState.getCurBlockPosition(i).Row * BlockH;
 		if(pos_x >= GridStartPosX && pos_y >= GridStartPosY)
 			Image::CreateAndDrawTexture(render, _gameState.getCurBlockFilePath(), BlockW, BlockH, pos_x, pos_y);
 	}
@@ -176,6 +211,20 @@ void Game::drawGridBlock()
 		}
 }
 
+void Game::drawNextBlock()
+{
+	int pos_x = 0;
+	int pos_y = 0;
+	for (int i = 0; i < Block::nTiles; i++)
+	{
+		pos_x = NextBlockStartPosX + _gameState.getNextBlockPosition(i).Column* UIBlockW;
+		pos_y = NextBlockStartPosY + _gameState.getNextBlockPosition(i).Row * UIBlockH;
+		if (pos_x >= GridStartPosX && pos_y >= GridStartPosY)
+			Image::CreateAndDrawTexture(render, _gameState.getNextBlockFilePath(), UIBlockW, UIBlockH, pos_x, pos_y);
+	}
+}
+
+
 void Game::drawBackground()
 {
 	Image::CreateAndDrawTexture(render, bg_path);
@@ -186,3 +235,8 @@ void Game::drawGrid()
 	Image::CreateAndDrawTexture(render, grid_path, 360, 720, 20, 20);
 }
 
+void Game::drawScore()
+{
+	Text::createAndDrawText(render, font_path, fontSize, "Score:", 75, 50, ScoreStartPosX, ScoreStartPosY);
+	Text::createAndDrawText(render, font_path, fontSize, std::to_string(point) , 105, 55, PointStartPosX, PointStartPosY);
+}

@@ -1,13 +1,16 @@
 #include "GameState.h"
 
-void GameState::PlaceBlock()
+void GameState::PlaceBlock(int &point)
 {
     for (int i = 0; i < Block::nTiles; i++)
     {
         Position pos = _curBlock.GetPosition(i);
         _grid->SetGridValue(pos.Row, pos.Column, _curBlock.GetId());
     }
-    _grid->clearRows();
+
+    int point_added = _grid->clearRows();
+    point += point_added * point_added;
+
     if (IsGameOver())
         _gameOver = true;
     else
@@ -68,13 +71,24 @@ void GameState::MoveRight()
         _curBlock.Move(0, -1);
 }
 
-void GameState::MoveDown()
+bool GameState::MoveDown(int & point)
 {
     _curBlock.Move(1, 0);
     if (!blockFit())
     {
         _curBlock.Move(-1, 0);
-        PlaceBlock();
+        PlaceBlock(point);
+        return false;
+    }
+    return true;
+}
+
+void GameState::hardDrop(int &point)
+{
+    bool CanMoveDown = true;
+    while (CanMoveDown)
+    {
+        CanMoveDown = MoveDown(point);
     }
 }
 
@@ -111,4 +125,27 @@ void GameState::GetAndUpdateCurBlock()
 int GameState::GetGridValue(const int& r, const int& c)
 {
     return _grid->getValueAt1Position(r, c);
+}
+
+Position GameState::getNextBlockPosition(int tile)
+{
+    return _blockQueue->getNextBlockPosition(tile);
+}
+
+std::string GameState::getNextBlockFilePath()
+{
+    const int nextBlockID = _blockQueue->getNextBlockID();
+    return _blockQueue->getBlockPath(nextBlockID);
+}
+
+void GameState::ResetGrid()
+{
+    _grid->ResetGrid();
+}
+
+void GameState::newGame()
+{
+    ResetGrid();
+    GetAndUpdateCurBlock();
+    _gameOver = false;
 }

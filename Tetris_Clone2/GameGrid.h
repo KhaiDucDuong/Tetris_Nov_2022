@@ -23,6 +23,9 @@ public:
 	void SetGridValue(const int& r, const int& c, const int& new_value);
 
 	int getValueAt1Position(const int& r, const int& c);
+
+	//reset Grid Value to 0
+	void ResetGrid();
 private:
 	int grid[rows][columns];
 

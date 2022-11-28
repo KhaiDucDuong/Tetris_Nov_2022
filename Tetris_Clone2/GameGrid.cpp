@@ -63,6 +63,13 @@ int GameGrid::getValueAt1Position(const int& r, const int& c)
 		return 0;
 }
 
+void GameGrid::ResetGrid()
+{
+	for (int r = 0; r < rows; r++)
+		for (int c = 0; c < columns; c++)
+			grid[r][c] = 0;
+}
+
 void GameGrid::clearRow(const int& r)
 {
 	for (int c = 0; c < columns; c++)
