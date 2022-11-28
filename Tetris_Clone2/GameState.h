@@ -22,10 +22,13 @@ public:
 	//move _curBlock right
 	void MoveRight();
 	//move _curBlock down
-	void MoveDown();
+	bool MoveDown(int& point);
+
+	//drop _curBlock down imediately
+	void hardDrop(int& point);
 
 	//place _curBlock to _grid and call ClearFullRows and check IsGameOver, if game is not over, update _curBlock
-	void PlaceBlock();
+	void PlaceBlock(int& point);
 	//check if game is over; if yes, set _gameOver to true
 	bool IsGameOver();
 	//check if _curBlock is in a legal position
@@ -45,5 +48,23 @@ public:
 
 	//get _curBlock FilePath
 	std::string getCurBlockFilePath();
+
+	//set _curBlock to _nextBlock and update new _nextBlock
+	void GetAndUpdateCurBlock();
+
+	//get the value of a position in _grid
+	int GetGridValue(const int& r, const int& c);
+
+	//get nextBlock Position
+	Position getNextBlockPosition(int tile);
+
+	//get nextBlock FilePath
+	std::string getNextBlockFilePath();
+
+	//reset Grid
+	void ResetGrid();
+
+	//set _gameOver to false
+	void newGame();
 };
 

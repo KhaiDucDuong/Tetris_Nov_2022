@@ -1,14 +1,19 @@
 #pragma once
 #include "GameState.h"
-//#include "BlockQueue.h"
-//#include "GameGrid.h"
 #include "Image.h"
+#include "Text.h"
 
 class Game
 {
 public:
-	Game();
+	Game(const int level);
 	enum {ScreenW = 580, ScreenH = 760};
+	enum {BlockW = 36, BlockH = 36};
+	enum {GridStartPosX = 20, GridStartPosY = 20};
+	enum {UIBlockW = 20, UIBlockH = 20};
+	enum {NextBlockStartPosX = 386, NextBlockStartPosY = 292};
+	enum {ScoreStartPosX = 445, ScoreStartPosY = 55};
+	enum {PointStartPosX = 435, PointStartPosY = 115};
 	//init SDL and and other classes
 	void init();
 	//loop game_logic and game_rendering until gameOver is true
@@ -19,6 +24,8 @@ public:
 	void game_restart();
 private:
 	bool gameOver;
+	bool exitGame;
+	int point;
 	//handling game logic
 	void game_logic();
 	//rendering the current game
@@ -29,62 +36,44 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* render;
 	
-
-	//GameState _gameState;
-	/*Block _curBlock;
-	BlockQueue _blockQueue;
-	GameGrid _grid;*/
+	GameState _gameState;
 
 	std::string bg_path = "res/Background.jpg";
 	std::string UI_path = "res/UI.png";
 	std::string grid_path = "res/Grid.png";
+	std::string font_path = "res/font.ttf";
 
-	//hard code the width and pos right now - cause i'm lazy...
+	const int fontSize = 24;
+
+	//draw background
 	void drawBackground();
-	//hard code the width and pos right now - cause i'm lazy...
+	//draw game Grid
 	void drawGrid();
-	//hard code the width and pos right now - cause i'm lazy...
+	//draw player UI
 	void drawUI();
 	//draw the current dropping block
 	void drawCurBlock();
 	//draw the blocks placed on grid
 	void drawGridBlock();
 
+	//draw Score
+	void drawScore();
+
+	//draw level UI for players to interact with
+	void drawLevelDifficulty();
+
+	//draw preview NextBlock
+	void drawNextBlock();
+
+	//draw GameOverText when game is lost
+	void drawGameOver();
 
 
 
-	////rotate _curBlock CW
-	//void RotateCW();
-	////rotate _curBlock CCW
-	//void RotateCCW();
-	////move _curBlock left
-	//void MoveLeft();
-	////move _curBlock right
-	//void MoveRight();
-	////move _curBlock down
-	//void MoveDown();
+	const int fps = 60;
+	int timePassed;
+	int level;
+	int timeTillDrop;
 
-	////place _curBlock to _grid and call ClearFullRows and check IsGameOver, if game is not over, update _curBlock
-	//void PlaceBlock();
-	////check if game is over; if yes, set _gameOver to true
-	//bool IsGameOver();
-	////check if _curBlock is in a legal position
-	//bool blockFit();
-
-
-
-
-
-	////get _curBlock id
-	//int getCurBlockID();
-
-	////get filePath based on Block's ID
-	//std::string getBlockFilePath(const int id);
-
-	////get _curBlock position
-	//Position getCurBlockPosition(int tile);
-
-	////get _curBlock FilePath
-	//std::string getCurBlockFilePath();
 };
 

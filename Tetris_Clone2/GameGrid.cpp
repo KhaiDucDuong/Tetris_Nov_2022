@@ -55,6 +55,21 @@ void GameGrid::SetGridValue(const int& r, const int& c, const int& new_value)
 		grid[r][c] = new_value;
 }
 
+int GameGrid::getValueAt1Position(const int& r, const int& c)
+{
+	if (isInside(r, c))
+		return grid[r][c];
+	else
+		return 0;
+}
+
+void GameGrid::ResetGrid()
+{
+	for (int r = 0; r < rows; r++)
+		for (int c = 0; c < columns; c++)
+			grid[r][c] = 0;
+}
+
 void GameGrid::clearRow(const int& r)
 {
 	for (int c = 0; c < columns; c++)

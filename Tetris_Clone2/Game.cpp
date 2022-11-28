@@ -1,12 +1,16 @@
 #include "Game.h"
 
-Game::Game()
+Game::Game(const int level)
 {
 	window = NULL;
 	render = NULL;
-	gameOver = true;
 
-	//_curBlock = _blockQueue.GetandUpdate();
+	gameOver = true;
+	exitGame = true;
+	point = 0;
+	this->level = level;
+	timeTillDrop = 3000 / fps / (level * 2);
+	timePassed = 0;
 }
 
 void Game::init()
@@ -34,14 +38,18 @@ void Game::init()
 				return;
 			}
 		}
+
+		if (TTF_Init() == -1)
+			std::cout << "SDL_ttf failed to init!!!\n";
 	}
 
 	gameOver = false;
+	exitGame = false;
 }
 
 void Game::game_loop()
 {
-	while (!gameOver)
+	while (!exitGame)
 	{
 		game_logic();
 		game_rendering();
@@ -50,14 +58,37 @@ void Game::game_loop()
 
 void Game::game_quit()
 {
+	TTF_Quit();
+	SDL_DestroyRenderer(render);
+	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
 
 void Game::game_logic()
 {
 	game_events();
+	if (!gameOver)
+	{
 
+		if (timePassed == timeTillDrop)
+		{
+			timePassed = 0;
+			_gameState.MoveDown(point);
+		}
+		else
+			timePassed++;
 
+	}
+
+	gameOver = _gameState.getGameOver();
+}
+
+void Game::game_restart()
+{
+	timePassed = 0;
+	point = 0;
+	gameOver = false;
+	_gameState.newGame();
 }
 
 void Game::game_rendering()
@@ -71,25 +102,77 @@ void Game::game_rendering()
 	drawCurBlock();
 	drawGridBlock();
 
+	drawNextBlock();
+	drawScore();
 	Image::updateScreen(render);
 }
 
 void Game::game_events()
 {
 	SDL_Event event;
-	if (SDL_PollEvent(&event))
-	{
-		switch (event.type)
+
+		if (SDL_PollEvent(&event))
 		{
-		case SDL_QUIT:
-		{
-			gameOver = true;
-			break;
+			if (!gameOver)
+			{
+				switch (event.type)
+				{
+				case SDL_QUIT:
+				{
+					gameOver = true;
+					exitGame = true;
+					break;
+				}
+				case SDL_KEYDOWN:
+				{
+					switch (event.key.keysym.sym)
+					{
+					case SDLK_UP:
+					{
+						_gameState.RotateCW();
+						break;
+					}
+					case SDLK_z:
+					{
+						_gameState.RotateCCW();
+						break;
+					}
+					case SDLK_DOWN:
+					{
+						_gameState.MoveDown(point);
+						//avoid double drop
+						timePassed = 0;
+						break;
+					}
+					case SDLK_LEFT:
+					{
+						_gameState.MoveLeft();
+						break;
+					}
+					case SDLK_RIGHT:
+					{
+						_gameState.MoveRight();
+						break;
+					}
+					case SDLK_SPACE:
+					{
+						_gameState.hardDrop(point);
+						break;
+					}
+					default:
+						break;
+					}
+				}
+				default:
+					break;
+				}
+			}
+			else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN)
+			{
+				game_restart();
+			}
 		}
-		default:
-			break;
-		}
-	}
+	
 }
 
 void Game::drawUI()
@@ -99,16 +182,48 @@ void Game::drawUI()
 
 void Game::drawCurBlock()
 {
-	/*for (int i = 0; i < Block::nTiles; i++)
+	int pos_x = 0;
+	int pos_y = 0;
+	for (int i = 0; i < Block::nTiles; i++)
 	{
-		Image::CreateAndDrawTexture(render, getCurBlockFilePath(), 36, 36, 20, 20);
-	}*/
+		pos_x = GridStartPosX + _gameState.getCurBlockPosition(i).Column * BlockW;
+		pos_y = GridStartPosY + _gameState.getCurBlockPosition(i).Row * BlockH;
+		if(pos_x >= GridStartPosX && pos_y >= GridStartPosY)
+			Image::CreateAndDrawTexture(render, _gameState.getCurBlockFilePath(), BlockW, BlockH, pos_x, pos_y);
+	}
 }
 
 void Game::drawGridBlock()
 {
-
+	int pos_x = 0;
+	int pos_y = 0;
+	int blockID = 0;
+	for(int r = 0; r < GameGrid::rows; r++)
+		for (int c = 0; c < GameGrid::columns; c++)
+		{
+			if (_gameState.GetGridValue(r, c) != 0)
+			{
+				pos_x = GridStartPosX + c * BlockW;
+				pos_y = GridStartPosY + r * BlockH;
+				blockID = (_gameState.GetGridValue(r, c));
+				Image::CreateAndDrawTexture(render, _gameState.getBlockFilePath(blockID), BlockW, BlockH, pos_x, pos_y);
+			}
+		}
 }
+
+void Game::drawNextBlock()
+{
+	int pos_x = 0;
+	int pos_y = 0;
+	for (int i = 0; i < Block::nTiles; i++)
+	{
+		pos_x = NextBlockStartPosX + _gameState.getNextBlockPosition(i).Column* UIBlockW;
+		pos_y = NextBlockStartPosY + _gameState.getNextBlockPosition(i).Row * UIBlockH;
+		if (pos_x >= GridStartPosX && pos_y >= GridStartPosY)
+			Image::CreateAndDrawTexture(render, _gameState.getNextBlockFilePath(), UIBlockW, UIBlockH, pos_x, pos_y);
+	}
+}
+
 
 void Game::drawBackground()
 {
@@ -120,97 +235,8 @@ void Game::drawGrid()
 	Image::CreateAndDrawTexture(render, grid_path, 360, 720, 20, 20);
 }
 
-
-
-
-
-
-//void Game::PlaceBlock()
-//{
-//	for (int i = 0; i < Block::nTiles; i++)
-//	{
-//		Position pos = _curBlock.GetPosition(i);
-//		_grid.SetGridValue(pos.Row, pos.Column, _curBlock.GetId());
-//	}
-//	_grid.clearRows();
-//	if (IsGameOver())
-//		gameOver = true;
-//	else
-//	{
-//		_curBlock = _blockQueue.GetandUpdate();
-//		//_curBlock.Reset();
-//	}
-//}
-//
-//bool Game::IsGameOver()
-//{
-//	return !(_grid.isRowEmpty(0) && _grid.isRowEmpty(1));
-//}
-//
-//bool Game::blockFit()
-//{
-//	for (int i = 0; i < Block::nTiles; i++)
-//	{
-//		Position pos = _curBlock.GetPosition(i);
-//		if (!_grid.isInside(pos.Row, pos.Column) || !_grid.isEmpty(pos.Row, pos.Column))
-//			return false;
-//	}
-//	return true;
-//}
-//
-//
-//void Game::RotateCW()
-//{
-//	_curBlock.RotateCW();
-//	if (!blockFit())
-//		_curBlock.RotateCCW();
-//}
-//
-//void Game::RotateCCW()
-//{
-//	_curBlock.RotateCCW();
-//	if (!blockFit())
-//		_curBlock.RotateCW();
-//}
-//
-//void Game::MoveLeft()
-//{
-//	_curBlock.Move(0, -1);
-//	if (!blockFit())
-//		_curBlock.Move(0, 1);
-//}
-//
-//void Game::MoveRight()
-//{
-//	_curBlock.Move(0, 1);
-//	if (!blockFit())
-//		_curBlock.Move(0, -1);
-//}
-//
-//void Game::MoveDown()
-//{
-//	_curBlock.Move(1, 0);
-//	if (!blockFit())
-//		_curBlock.Move(-1, 0);
-//}
-//
-//
-//int Game::getCurBlockID()
-//{
-//	return _curBlock.GetId();
-//}
-//
-//std::string Game::getBlockFilePath(const int id)
-//{
-//	return _blockQueue.getBlockPath(id);
-//}
-//
-//Position Game::getCurBlockPosition(int tile)
-//{
-//	return _curBlock.GetPosition(tile);
-//}
-//
-//std::string Game::getCurBlockFilePath()
-//{
-//	return _blockQueue.getBlockPath(_curBlock.GetId());
-//}
+void Game::drawScore()
+{
+	Text::createAndDrawText(render, font_path, fontSize, "Score:", 75, 50, ScoreStartPosX, ScoreStartPosY);
+	Text::createAndDrawText(render, font_path, fontSize, std::to_string(point) , 105, 55, PointStartPosX, PointStartPosY);
+}
