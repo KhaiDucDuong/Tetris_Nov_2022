@@ -4,7 +4,7 @@ class GameGrid
 public:
 	//default numbers of rows and columns for tetris game (only 20 rows will be displayed, the top 2 rows will be used to check if game is over
 	//if row 0 or row 1 is not empty then game is over
-	enum {rows = 20, columns = 10};
+	enum {rows = 22, columns = 10};
 	//init every position in grid to 0
 	GameGrid();
 	//check if a position is in grid

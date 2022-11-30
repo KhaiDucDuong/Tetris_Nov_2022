@@ -2,6 +2,7 @@
 #include "GameState.h"
 #include "Image.h"
 #include "Text.h"
+#include "Music.h"
 
 class Game
 {
@@ -9,7 +10,8 @@ public:
 	Game(const int level);
 	enum {ScreenW = 580, ScreenH = 760};
 	enum {BlockW = 36, BlockH = 36};
-	enum {GridStartPosX = 20, GridStartPosY = 20};
+	enum {GridStartPosX = 20, GridStartPosY = -52};
+	//enum {CurBlockStartPosX = 20, CurBlockStartPosY = 20 - (36 * 2)};
 	enum {UIBlockW = 20, UIBlockH = 20};
 	enum {NextBlockStartPosX = 386, NextBlockStartPosY = 292};
 	enum {ScoreStartPosX = 445, ScoreStartPosY = 55};
@@ -37,7 +39,12 @@ private:
 
 	SDL_Window* window;
 	SDL_Renderer* render;
+	Music *music;
 	
+	enum {nSongs = 4};
+	std::string musicPaths[nSongs];
+	int curSongIndex;
+
 	GameState _gameState;
 
 	std::string bg_path = "res/Background.jpg";
@@ -46,6 +53,8 @@ private:
 	std::string font_path = "res/font.ttf";
 	std::string rightArrow_path = "res/right arrow.png";
 	std::string leftArrow_path = "res/left arrow.png";
+	std::string playButton_path = "res/play.png";
+	std::string tetrisLogo_path = "res/tetrisLogo.png";
 
 	const int fontSize = 24;
 
@@ -66,13 +75,23 @@ private:
 	//draw level UI for players to interact with
 	void drawLevelDifficulty();
 
+	//draw music UI
+	void drawMusic();
+
 	//draw preview NextBlock
 	void drawNextBlock();
 
 	//draw GameOverText when game is lost
 	void drawGameOver();
 
+	//draw Tetris logo
+	void drawLogo();
 
+	//load and play previous song
+	void previousSong();
+
+	//load and play next song
+	void nextSong();
 
 	const int fps = 60;
 	int timePassed;

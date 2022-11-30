@@ -22,7 +22,7 @@ void GameState::PlaceBlock(int &point)
 
 bool GameState::IsGameOver()
 {
-    return !(_grid->isRowEmpty(0)/* && _grid->isRowEmpty(1)*/);
+    return !(_grid->isRowEmpty(0) && _grid->isRowEmpty(1));
 }
 
 bool GameState::blockFit()

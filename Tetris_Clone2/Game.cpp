@@ -11,6 +11,12 @@ Game::Game(const int level)
 	this->level = level;
 	timeTillDrop = 3000 / fps / (level * 2);
 	timePassed = 0;
+
+	music = new Music();
+	musicPaths[0] = "res/music/Fly Away.mp3";
+	musicPaths[1] = "res/music/New Day.mp3";
+	musicPaths[2] = "res/music/Tetris.mp3";
+	musicPaths[3] = "res/music/I Really Want to Stay at Your House.mp3";
 }
 
 void Game::init()
@@ -41,6 +47,17 @@ void Game::init()
 
 		if (TTF_Init() == -1)
 			std::cout << "SDL_ttf failed to init!!!\n";
+
+		if (SDL_Init(SDL_INIT_AUDIO) < 0)
+			std::cout << "Audio failed to inti!!!\n";
+		else
+		{
+			if (music->loadMusic(musicPaths[0]))
+			{
+				curSongIndex = 0;
+				music->playMusic();
+			}
+		}	
 	}
 
 	gameOver = false;
@@ -59,6 +76,7 @@ void Game::game_loop()
 void Game::game_quit()
 {
 	TTF_Quit();
+	Mix_CloseAudio();
 	SDL_DestroyRenderer(render);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -95,7 +113,7 @@ void Game::game_restart()
 void Game::game_rendering()
 {
 	Image::clearScreen(render);
-	//draw bg
+
 	drawBackground();
 	drawGrid();
 	drawUI();
@@ -106,6 +124,8 @@ void Game::game_rendering()
 	drawNextBlock();
 	drawScore();
 	drawLevelDifficulty();
+	drawMusic();
+	drawLogo();
 
 	if (gameOver)
 		drawGameOver();
@@ -174,9 +194,6 @@ void Game::game_events()
 					{
 						//check if user clicked on difficulty arrows
 						//left arrow
-						/*int mouse_pos_x;
-						int mouse_pos_y;
-						SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);*/
 						if (event.button.x >= 435 && event.button.x <= 470 && event.button.y >= 480 && event.button.y <= 515)
 						{
 							if (level > 1)
@@ -186,7 +203,7 @@ void Game::game_events()
 							}
 						}
 						//right arrow
-						if (event.button.x >= 490 && event.button.x <= 525 && event.button.y >= 480 && event.button.y <= 515)
+						else if (event.button.x >= 490 && event.button.x <= 525 && event.button.y >= 480 && event.button.y <= 515)
 						{
 							if (level < 15)
 							{
@@ -194,8 +211,25 @@ void Game::game_events()
 								resetSpeed();
 							}
 						}
-						//Image::CreateAndDrawTexture(render, leftArrow_path, 35, 35, 435, 480);
-						//Image::CreateAndDrawTexture(render, rightArrow_path, 35, 35, 490, 480);
+						//check if user clicked on music UI
+						//left arrow
+						else if(event.button.x >= 430 && event.button.x <= 460 && event.button.y >= 600 && event.button.y <= 630)
+						{
+							previousSong();
+						}
+						//play - pause button
+						else if (event.button.x >= 465 && event.button.x <= 495 && event.button.y >= 600 && event.button.y <= 630)
+						{
+							if (music->isMusicPaused())
+								music->resumeMusic();
+							else
+								music->pauseMusic();
+						}
+						//right arrow
+						else if (event.button.x >= 500 && event.button.x <= 530 && event.button.y >= 600 && event.button.y <= 630)
+						{
+							nextSong();
+						}
 					}
 				}
 				default:
@@ -228,15 +262,28 @@ void Game::drawUI()
 
 void Game::drawCurBlock()
 {
-	int pos_x = 0;
-	int pos_y = 0;
+	//because the display grid only has 20 rows and the grid we created has 22 rows (top 2 rows are used to check if game over - condition is top 2 rows always must be empty)
+	//so we don't want to draw any block on the top 2 rows and will only draw them when all of the blocks are located from the third rows upward
+	bool draw = true;
 	for (int i = 0; i < Block::nTiles; i++)
+		if (_gameState.getCurBlockPosition(i).Row < 2)
+		{
+			draw = false;
+			break;
+		}
+
+		if(draw)
 	{
-		pos_x = GridStartPosX + _gameState.getCurBlockPosition(i).Column * BlockW;
-		pos_y = GridStartPosY + _gameState.getCurBlockPosition(i).Row * BlockH;
-		if(pos_x >= GridStartPosX && pos_y >= GridStartPosY)
+		int pos_x = 0;
+		int pos_y = 0;
+		for (int i = 0; i < Block::nTiles; i++)
+		{
+			pos_x = GridStartPosX + _gameState.getCurBlockPosition(i).Column * BlockW;
+			pos_y = GridStartPosY + _gameState.getCurBlockPosition(i).Row * BlockH;
 			Image::CreateAndDrawTexture(render, _gameState.getCurBlockFilePath(), BlockW, BlockH, pos_x, pos_y);
+		}
 	}
+	
 }
 
 void Game::drawGridBlock()
@@ -244,7 +291,7 @@ void Game::drawGridBlock()
 	int pos_x = 0;
 	int pos_y = 0;
 	int blockID = 0;
-	for(int r = 0; r < GameGrid::rows; r++)
+	for(int r = 2; r < GameGrid::rows; r++)
 		for (int c = 0; c < GameGrid::columns; c++)
 		{
 			if (_gameState.GetGridValue(r, c) != 0)
@@ -278,6 +325,14 @@ void Game::drawGameOver()
 	Text::createAndDrawText(render, font_path, fontSize, "Press ENTER to play again", 400, 125, 90, 440, color);
 }
 
+void Game::drawMusic()
+{
+	Text::createAndDrawText(render, font_path, fontSize, "Music:", 75, 50, 442, 540);
+	Image::CreateAndDrawTexture(render, leftArrow_path, 30, 30, 430, 600);
+	Image::CreateAndDrawTexture(render, rightArrow_path, 30, 30, 500, 600);
+	Image::CreateAndDrawTexture(render, playButton_path, 30, 30, 465, 600);
+}
+
 
 void Game::drawBackground()
 {
@@ -302,3 +357,28 @@ void Game::drawLevelDifficulty()
 	Image::CreateAndDrawTexture(render, leftArrow_path, 35, 35, 435, 480);
 	Image::CreateAndDrawTexture(render, rightArrow_path, 35, 35, 490, 480);
 }
+
+void Game::drawLogo()
+{
+	Image::CreateAndDrawTexture(render, tetrisLogo_path, 100, 40, 432, 635);
+}
+
+void Game::previousSong()
+{
+	if (curSongIndex == 0)
+		curSongIndex = nSongs - 1;
+	else
+		curSongIndex--;
+
+	music->loadMusic(musicPaths[curSongIndex]);
+	music->playMusic();
+}
+
+void Game::nextSong()
+{
+	curSongIndex = (curSongIndex + 1) % nSongs;
+
+	music->loadMusic(musicPaths[curSongIndex]);
+	music->playMusic();
+}
+
